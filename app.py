@@ -17,6 +17,16 @@ database.init_db()
 def index():
     return send_from_directory('static', 'index.html')
 
+@app.route('/styles.css')
+def serve_css():
+    """Serve CSS file"""
+    return send_from_directory('static', 'styles.css')
+
+@app.route('/app.js')
+def serve_js():
+    """Serve JavaScript file"""
+    return send_from_directory('static', 'app.js')
+
 @app.route('/api/recipes', methods=['GET'])
 def get_recipes():
     """Get all recipes"""
