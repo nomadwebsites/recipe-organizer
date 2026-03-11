@@ -1,6 +1,7 @@
 import os
 import json
 import requests
+import cloudscraper
 from anthropic import Anthropic
 from bs4 import BeautifulSoup
 import re
@@ -129,30 +130,18 @@ def parse_recipe_from_json_ld(recipe_data, url):
     return parsed
 
 def fetch_url_content(url):
-    """Fetch HTML content from a URL"""
+    """Fetch HTML content from a URL using cloudscraper"""
     try:
-        # Create a session for better cookie handling
-        session = requests.Session()
+        # Try cloudscraper first
+        scraper = cloudscraper.create_scraper(
+            browser={
+                'browser': 'chrome',
+                'platform': 'windows',
+                'mobile': False
+            }
+        )
         
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'DNT': '1',
-            'Connection': 'keep-alive',
-            'Upgrade-Insecure-Requests': '1',
-            'Sec-Fetch-Dest': 'document',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-Site': 'none',
-            'Sec-Fetch-User': '?1',
-            'Cache-Control': 'max-age=0',
-            'sec-ch-ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
-            'sec-ch-ua-mobile': '?0',
-            'sec-ch-ua-platform': '"Windows"'
-        }
-        
-        response = session.get(url, headers=headers, timeout=20, allow_redirects=True)
+        response = scraper.get(url, timeout=30, allow_redirects=True)
         response.raise_for_status()
         
         # Parse HTML and extract text
@@ -182,48 +171,70 @@ def parse_recipe_with_claude(url, api_key=None):
     html_content = None
     fetch_error = None
     
-    # Try multiple header combinations
-    header_variants = [
-        # Variant 1: Mac Safari
-        {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Referer': 'https://www.google.com/',
-        },
-        # Variant 2: Windows Chrome
-        {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Referer': 'https://www.google.com/',
-        },
-        # Variant 3: Linux Firefox
-        {
-            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:120.0) Gecko/20100101 Firefox/120.0',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Referer': 'https://www.google.com/',
-        }
-    ]
+    print(f"Fetching recipe from: {url}")
     
-    for i, headers in enumerate(header_variants):
-        try:
-            session = requests.Session()
-            response = session.get(url, headers=headers, timeout=20, allow_redirects=True)
-            response.raise_for_status()
-            html_content = response.text
-            print(f"Successfully fetched URL with header variant {i+1}")
-            break
-        except requests.exceptions.HTTPError as e:
-            fetch_error = str(e)
-            if i < len(header_variants) - 1:
-                print(f"Header variant {i+1} failed, trying next...")
-                continue
-        except Exception as e:
-            fetch_error = str(e)
-            if i < len(header_variants) - 1:
-                continue
+    # Method 1: Try cloudscraper first (handles Cloudflare and most bot protection)
+    try:
+        print("Method 1: Trying cloudscraper (bypasses Cloudflare)...")
+        scraper = cloudscraper.create_scraper(
+            browser={
+                'browser': 'chrome',
+                'platform': 'windows',
+                'mobile': False
+            }
+        )
+        response = scraper.get(url, timeout=30)
+        response.raise_for_status()
+        html_content = response.text
+        print("✓ Successfully fetched with cloudscraper!")
+    except Exception as e:
+        print(f"✗ Cloudscraper failed: {e}")
+        fetch_error = str(e)
+    
+    # Method 2: If cloudscraper failed, try regular requests with multiple User-Agents
+    if not html_content:
+        print("Method 2: Trying regular requests with various User-Agents...")
+        header_variants = [
+            # Variant 1: Mac Safari
+            {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Referer': 'https://www.google.com/',
+            },
+            # Variant 2: Windows Chrome
+            {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Referer': 'https://www.google.com/',
+            },
+            # Variant 3: Linux Firefox
+            {
+                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:120.0) Gecko/20100101 Firefox/120.0',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Referer': 'https://www.google.com/',
+            }
+        ]
+        
+        for i, headers in enumerate(header_variants):
+            try:
+                session = requests.Session()
+                response = session.get(url, headers=headers, timeout=20, allow_redirects=True)
+                response.raise_for_status()
+                html_content = response.text
+                print(f"✓ Successfully fetched with User-Agent variant {i+1}")
+                break
+            except requests.exceptions.HTTPError as e:
+                fetch_error = str(e)
+                if i < len(header_variants) - 1:
+                    print(f"✗ User-Agent variant {i+1} failed, trying next...")
+                    continue
+            except Exception as e:
+                fetch_error = str(e)
+                if i < len(header_variants) - 1:
+                    continue
     
     if html_content:
         # Try to extract JSON-LD structured data first (much more reliable!)
@@ -317,6 +328,67 @@ Webpage content:
                     recipe_data['image_url'] = img['src']
         except:
             pass
+        
+        return recipe_data
+        
+    except json.JSONDecodeError as e:
+        raise Exception(f"Failed to parse Claude's response as JSON: {str(e)}")
+    except Exception as e:
+        raise Exception(f"Claude API error: {str(e)}")
+
+def parse_recipe_from_text(text, api_key=None):
+    """Parse recipe from pasted text using Claude AI"""
+    if not api_key:
+        api_key = os.getenv('ANTHROPIC_API_KEY')
+    
+    if not api_key:
+        raise Exception("ANTHROPIC_API_KEY not found in environment variables")
+    
+    # Initialize Claude client
+    client = Anthropic(api_key=api_key)
+    
+    # Create prompt for Claude
+    prompt = f"""Please extract the recipe information from the following text and return it as a JSON object with these exact fields:
+
+- name: string (recipe name)
+- description: string (brief description, use empty string if not found)
+- ingredients: array of strings (each ingredient as a separate item)
+- instructions: array of strings (each step as a separate item)
+- prep_time: string (e.g., "15 minutes", null if not found)
+- cook_time: string (e.g., "30 minutes", null if not found)
+- servings: string (e.g., "4 servings", null if not found)
+- tags: array of strings (e.g., ["dinner", "vegetarian"], try to infer from recipe type)
+
+Return ONLY the JSON object, no other text. If you cannot find certain information, use null for strings and empty arrays for arrays.
+
+Recipe text:
+{text}"""
+
+    # Call Claude API
+    try:
+        message = client.messages.create(
+            model="claude-3-5-sonnet-20241022",
+            max_tokens=2000,
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+        
+        # Extract the response
+        response_text = message.content[0].text
+        
+        # Parse JSON from response
+        # Sometimes Claude wraps it in markdown code blocks
+        if '```json' in response_text:
+            response_text = response_text.split('```json')[1].split('```')[0].strip()
+        elif '```' in response_text:
+            response_text = response_text.split('```')[1].split('```')[0].strip()
+        
+        recipe_data = json.loads(response_text)
+        
+        # No source URL for pasted text
+        recipe_data['source_url'] = None
+        recipe_data['image_url'] = None
         
         return recipe_data
         

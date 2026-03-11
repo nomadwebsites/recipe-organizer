@@ -8,11 +8,13 @@ const searchBtn = document.getElementById('searchBtn');
 const clearSearchBtn = document.getElementById('clearSearchBtn');
 const addRecipeBtn = document.getElementById('addRecipeBtn');
 const importUrlBtn = document.getElementById('importUrlBtn');
+const pasteTextBtn = document.getElementById('pasteTextBtn');
 
 // Modals
 const recipeModal = document.getElementById('recipeModal');
 const editModal = document.getElementById('editModal');
 const importModal = document.getElementById('importModal');
+const pasteModal = document.getElementById('pasteModal');
 
 // Close buttons
 const closeButtons = document.querySelectorAll('.close');
@@ -33,6 +35,7 @@ function closeAllModals() {
     recipeModal.style.display = 'none';
     editModal.style.display = 'none';
     importModal.style.display = 'none';
+    pasteModal.style.display = 'none';
 }
 
 // Load all recipes on page load
@@ -72,6 +75,11 @@ importUrlBtn.addEventListener('click', () => {
     openImportModal();
 });
 
+// Paste text button
+pasteTextBtn.addEventListener('click', () => {
+    openPasteModal();
+});
+
 // Recipe form submission
 document.getElementById('recipeForm').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -92,6 +100,17 @@ document.getElementById('importForm').addEventListener('submit', (e) => {
 // Cancel import button
 document.getElementById('cancelImportBtn').addEventListener('click', () => {
     importModal.style.display = 'none';
+});
+
+// Paste form submission
+document.getElementById('pasteForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    importRecipeFromText();
+});
+
+// Cancel paste button
+document.getElementById('cancelPasteBtn').addEventListener('click', () => {
+    pasteModal.style.display = 'none';
 });
 
 // API Functions
@@ -234,6 +253,44 @@ async function importRecipeFromUrl() {
         console.error('Error importing recipe:', error);
         statusDiv.className = 'import-status error';
         statusDiv.textContent = 'Failed to import recipe: ' + error.message;
+    }
+}
+
+async function importRecipeFromText() {
+    const text = document.getElementById('pasteText').value;
+    const statusDiv = document.getElementById('pasteStatus');
+
+    statusDiv.className = 'import-status loading';
+    statusDiv.textContent = 'Parsing recipe with AI... This may take a few seconds.';
+
+    try {
+        const response = await fetch('/api/parse-text', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            statusDiv.className = 'import-status success';
+            statusDiv.textContent = '✅ Recipe parsed successfully! Opening editor...';
+
+            setTimeout(() => {
+                pasteModal.style.display = 'none';
+                openAddRecipeModal(result);
+                statusDiv.className = 'import-status';
+                statusDiv.textContent = '';
+                document.getElementById('pasteText').value = '';
+            }, 1500);
+        } else {
+            statusDiv.className = 'import-status error';
+            statusDiv.textContent = 'Error: ' + result.error;
+        }
+    } catch (error) {
+        console.error('Error parsing recipe:', error);
+        statusDiv.className = 'import-status error';
+        statusDiv.textContent = 'Failed to parse recipe: ' + error.message;
     }
 }
 
@@ -389,6 +446,13 @@ function openImportModal() {
     document.getElementById('importStatus').className = 'import-status';
     document.getElementById('importStatus').textContent = '';
     importModal.style.display = 'block';
+}
+
+function openPasteModal() {
+    document.getElementById('pasteText').value = '';
+    document.getElementById('pasteStatus').className = 'import-status';
+    document.getElementById('pasteStatus').textContent = '';
+    pasteModal.style.display = 'block';
 }
 
 function resetForm() {

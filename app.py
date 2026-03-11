@@ -207,6 +207,23 @@ def parse_url():
         app.logger.error(f"Error parsing URL: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/parse-text', methods=['POST'])
+def parse_text():
+    """Parse recipe from pasted text using Claude AI"""
+    try:
+        data = request.json
+        text = data.get('text')
+        
+        if not text:
+            return jsonify({'error': 'Recipe text is required'}), 400
+        
+        recipe_data = recipe_parser.parse_recipe_from_text(text)
+        
+        return jsonify(recipe_data), 200
+    except Exception as e:
+        app.logger.error(f"Error parsing text: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/api/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""

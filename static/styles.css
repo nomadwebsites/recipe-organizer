@@ -166,6 +166,16 @@ header h1 {
     transform: scale(1.05);
 }
 
+.btn-success {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.btn-success:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(56, 239, 125, 0.4);
+}
+
 .btn-danger {
     background: #f44336;
     color: white;

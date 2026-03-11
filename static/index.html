@@ -12,6 +12,7 @@
             <h1>🍳 Recipe Organizer</h1>
             <div class="header-actions">
                 <button id="addRecipeBtn" class="btn btn-primary">Add Recipe</button>
+                <button id="pasteTextBtn" class="btn btn-success">📋 Paste Recipe</button>
                 <button id="importUrlBtn" class="btn btn-secondary">Import from URL</button>
             </div>
         </header>
@@ -104,11 +105,11 @@
         <div class="modal-content">
             <span class="close">&times;</span>
             <h2>Import Recipe from URL</h2>
-            <p>Enter a URL from a recipe website (e.g., AllRecipes, food blogs). Claude AI will extract the recipe information.</p>
+            <p>Enter a URL from a recipe website. Works best with Budget Bytes, King Arthur, and food blogs.</p>
             <form id="importForm">
                 <div class="form-group">
                     <label for="importUrl">Recipe URL *</label>
-                    <input type="url" id="importUrl" required placeholder="https://www.allrecipes.com/recipe/...">
+                    <input type="url" id="importUrl" required placeholder="https://www.budgetbytes.com/...">
                 </div>
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">Import Recipe</button>
@@ -116,6 +117,29 @@
                 </div>
             </form>
             <div id="importStatus" class="import-status"></div>
+        </div>
+    </div>
+
+    <!-- Paste Text Modal -->
+    <div id="pasteModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>📋 Paste Recipe Text</h2>
+            <p><strong>Works with ANY website!</strong> Copy the recipe from any website and paste it below. Claude AI will extract the information.</p>
+            <form id="pasteForm">
+                <div class="form-group">
+                    <label for="pasteText">Recipe Text *</label>
+                    <textarea id="pasteText" rows="15" required placeholder="Paste the full recipe here (title, ingredients, instructions, etc.)"></textarea>
+                    <small style="color: #666; display: block; margin-top: 5px;">
+                        💡 Tip: Go to any recipe website, select all the recipe text (Ctrl+A or Cmd+A), copy (Ctrl+C or Cmd+C), and paste here!
+                    </small>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-success">Parse Recipe</button>
+                    <button type="button" id="cancelPasteBtn" class="btn btn-text">Cancel</button>
+                </div>
+            </form>
+            <div id="pasteStatus" class="import-status"></div>
         </div>
     </div>
 
