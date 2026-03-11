@@ -204,7 +204,17 @@ def parse_url():
         
         return jsonify(recipe_data), 200
     except Exception as e:
+        app.logger.error(f"Error parsing URL: {str(e)}")
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/health', methods=['GET'])
+def health_check():
+    """Health check endpoint"""
+    return jsonify({
+        'status': 'healthy',
+        'routes': [str(rule) for rule in app.url_map.iter_rules()],
+        'anthropic_key_present': bool(os.getenv('ANTHROPIC_API_KEY'))
+    }), 200
 
 if __name__ == '__main__':
     port = int(os.getenv('PORT', 5000))
