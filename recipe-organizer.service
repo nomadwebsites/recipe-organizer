@@ -1,0 +1,17 @@
+[Unit]
+Description=Recipe Organizer Web Application
+After=network.target
+
+[Service]
+Type=notify
+User=YOUR_USERNAME
+Group=YOUR_USERNAME
+WorkingDirectory=/opt/recipe-organizer
+Environment="PATH=/opt/recipe-organizer/venv/bin"
+EnvironmentFile=/opt/recipe-organizer/.env
+ExecStart=/opt/recipe-organizer/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:5000 app:app
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

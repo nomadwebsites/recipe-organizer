@@ -1,0 +1,42 @@
+Recipe Organizer - Complete File Listing
+==========================================
+
+MAIN APPLICATION FILES
+----------------------
+app.py                      - Main Flask application with API endpoints
+database.py                 - SQLite database operations and FTS5 search
+recipe_parser.py            - Claude AI integration for URL parsing
+
+FRONTEND FILES
+--------------
+static/index.html           - Main HTML page with modals
+static/styles.css           - Responsive CSS styling with animations
+static/app.js               - JavaScript for frontend logic and API calls
+
+CONFIGURATION FILES
+-------------------
+requirements.txt            - Python dependencies
+.env.example                - Environment variables template
+.gitignore                  - Git ignore rules
+
+DEPLOYMENT FILES
+----------------
+deploy.sh                   - Automated Ubuntu deployment script
+start.sh                    - Quick start script for development
+recipe-organizer.service    - Systemd service configuration template
+seed_data.py                - Sample data seeder script
+
+DOCUMENTATION FILES
+-------------------
+README.md                   - Comprehensive installation and usage guide
+QUICKSTART.md               - Quick start guide for beginners
+PROJECT_SUMMARY.md          - Technical overview and project summary
+FILES_OVERVIEW.txt          - This file
+
+GENERATED FILES (at runtime)
+----------------------------
+.env                        - Your environment configuration (created from .env.example)
+recipes.db                  - SQLite database (auto-created on first run)
+venv/                       - Python virtual environment (auto-created)
+
+TOTAL: 15 source files + documentation

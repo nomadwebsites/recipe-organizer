@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Organizer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🍳 Recipe Organizer</h1>
+            <div class="header-actions">
+                <button id="addRecipeBtn" class="btn btn-primary">Add Recipe</button>
+                <button id="importUrlBtn" class="btn btn-secondary">Import from URL</button>
+            </div>
+        </header>
+
+        <div class="search-section">
+            <input type="text" id="searchInput" placeholder="Search recipes by name, ingredients, or description..." />
+            <button id="searchBtn" class="btn">Search</button>
+            <button id="clearSearchBtn" class="btn btn-text">Clear</button>
+        </div>
+
+        <div id="recipesGrid" class="recipes-grid">
+            <!-- Recipes will be loaded here -->
+        </div>
+    </div>
+
+    <!-- Recipe Modal -->
+    <div id="recipeModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="recipeDetails"></div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Recipe Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2 id="editModalTitle">Add Recipe</h2>
+            <form id="recipeForm">
+                <div class="form-group">
+                    <label for="recipeName">Recipe Name *</label>
+                    <input type="text" id="recipeName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="recipeDescription">Description</label>
+                    <textarea id="recipeDescription" rows="3"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="recipePrepTime">Prep Time</label>
+                        <input type="text" id="recipePrepTime" placeholder="e.g., 15 minutes">
+                    </div>
+                    <div class="form-group">
+                        <label for="recipeCookTime">Cook Time</label>
+                        <input type="text" id="recipeCookTime" placeholder="e.g., 30 minutes">
+                    </div>
+                    <div class="form-group">
+                        <label for="recipeServings">Servings</label>
+                        <input type="text" id="recipeServings" placeholder="e.g., 4 servings">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="recipeIngredients">Ingredients * (one per line)</label>
+                    <textarea id="recipeIngredients" rows="8" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="recipeInstructions">Instructions * (one step per line)</label>
+                    <textarea id="recipeInstructions" rows="8" required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="recipeTags">Tags (comma-separated)</label>
+                    <input type="text" id="recipeTags" placeholder="e.g., dinner, vegetarian, quick">
+                </div>
+
+                <div class="form-group">
+                    <label for="recipeImageUrl">Image URL</label>
+                    <input type="url" id="recipeImageUrl" placeholder="https://example.com/image.jpg">
+                </div>
+
+                <div class="form-group">
+                    <label for="recipeSourceUrl">Source URL</label>
+                    <input type="url" id="recipeSourceUrl" placeholder="https://example.com/recipe">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Save Recipe</button>
+                    <button type="button" id="cancelEditBtn" class="btn btn-text">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Import URL Modal -->
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Import Recipe from URL</h2>
+            <p>Enter a URL from a recipe website (e.g., AllRecipes, food blogs). Claude AI will extract the recipe information.</p>
+            <form id="importForm">
+                <div class="form-group">
+                    <label for="importUrl">Recipe URL *</label>
+                    <input type="url" id="importUrl" required placeholder="https://www.allrecipes.com/recipe/...">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Import Recipe</button>
+                    <button type="button" id="cancelImportBtn" class="btn btn-text">Cancel</button>
+                </div>
+            </form>
+            <div id="importStatus" class="import-status"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
